@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "adaptive-trial-simulator"
+version = "0.1.0"
+description = "Locally hosted LLM-guided clinical trial simulator"
+authors = ["Sudhanshu <sudhanshuathanimath@gmail.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.109.0"
+uvicorn = "^0.27.0"
+numpy = "^2.1.0"
+scipy = "^1.14.0"
+pydantic = "^2.5.3"
+langgraph = "^0.2.0"
+langchain-ollama = "^0.1.0"
+sqlalchemy = "^2.0.25"
+psycopg2-binary = "^2.9.9"
+numpyro = "^0.20.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.2"
+httpx = "^0.28.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+    "slow: marks tests that run full Bayesian MCMC (may take several seconds each)",
+]
