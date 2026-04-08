@@ -32,3 +32,21 @@ jobs:
 
       - name: Run fast unit & agent tests (no MCMC)
         run: poetry run pytest -m "not slow" -v --tb=short
+
+  test-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build

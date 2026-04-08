@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      # In production, these should be set via environment variables on the host system (e.g. Render)
+      - DATABASE_URL=${DATABASE_URL}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - LLM_PROVIDER=groq
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - TZ=Asia/Kolkata

@@ -1,13 +1,23 @@
 import os
-from langchain_ollama import ChatOllama
 
-# Initialize the local model
-# Ensure Ollama is running on your machine with the llama3.1 model downloaded
-local_llm = ChatOllama(
-    model="llama3.1",
-    temperature=0.1, # Keep it low for analytical statistical reasoning
-    base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"), # Supports Docker networking
-)
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama").lower()
 
-# You can now bind tools to this model just like you would with a paid API
-# local_llm_with_tools = local_llm.bind_tools(statistical_tools)
+if LLM_PROVIDER == "groq":
+    from langchain_groq import ChatGroq
+
+    local_llm = ChatGroq(
+        model="llama3-8b-8192",
+        temperature=0.1,
+        api_key=os.getenv("GROQ_API_KEY"),
+    )
+    print("[LLM] Using Groq API (llama3-8b-8192)")
+
+else:
+    from langchain_ollama import ChatOllama
+
+    local_llm = ChatOllama(
+        model="llama3.1",
+        temperature=0.1,
+        base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+    )
+    print("[LLM] Using local Ollama (llama3.1)")
