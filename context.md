@@ -66,23 +66,23 @@ adaptive-trial-simulator/
 
 ## Features: In Progress (v1.0 Roadmap)
 
-### Phase 1 — Make It Actually Functional
-- [ ] **Configurable Trial Form** — Let user set arm count, arm names, effect sizes, patients/arm, max phases, stopping threshold. Currently everything is hardcoded.
-- [ ] **Trial History Page** — Read TrialSession + PhaseLog back from DB. Add `GET /api/v1/trials` and `GET /api/v1/trials/{id}` endpoints. Frontend History tab shows all past runs.
-- [ ] **Real Stopping Rules** — Replace hardcoded `phase > 3 → END` with user-configured `max_phases` and Bayesian posterior threshold (e.g., stop arm if `prob_superior > 0.95`). Pass these through `TrialState`.
-- [ ] **Real Thompson Sampling** — Replace `math.exp()` weight proxy with Beta distribution posterior sampling (`np.random.beta(alpha, beta)`). Requires cohort engine to return response counts.
-- [ ] **CSV Export** — "Download CSV" button after simulation: exports phase-by-phase arm stats.
+### Phase 1 — Make It Actually Functional (Completed)
+- [x] **Configurable Trial Form** — Let user set arm count, arm names, effect sizes, patients/arm, max phases, stopping threshold. Currently everything is hardcoded.
+- [x] **Trial History Page** — Read TrialSession + PhaseLog back from DB. Add `GET /api/v1/trials` and `GET /api/v1/trials/{id}` endpoints. Frontend History tab shows all past runs.
+- [x] **Real Stopping Rules** — Replace hardcoded `phase > 3 → END` with user-configured `max_phases` and Bayesian posterior threshold (e.g., stop arm if `prob_superior > 0.95`). Pass these through `TrialState`.
+- [x] **Real Thompson Sampling** — Replace `math.exp()` weight proxy with Beta distribution posterior sampling (`np.random.beta(alpha, beta)`). Requires cohort engine to return response counts.
+- [x] **CSV Export** — "Download CSV" button after simulation: exports phase-by-phase arm stats.
 
-### Phase 2 — Deploy It (Free)
-- [ ] **LLM Provider Toggle** — `LLM_PROVIDER=groq|ollama` env var in `llm_config.py`. Groq API key stored as GitHub Secret + Render env var. Eliminates 60s/phase Ollama inference time.
-- [ ] **`docker-compose.prod.yml`** — Production override: no Ollama service, uses Supabase DATABASE_URL, sets LLM_PROVIDER=groq.
-- [ ] **`.env.example`** — Document all required env vars: `GROQ_API_KEY`, `DATABASE_URL`, `LLM_PROVIDER`, `ALLOWED_ORIGINS`.
-- [ ] **Dynamic CORS** — `main.py` reads `ALLOWED_ORIGINS` from env; defaults to localhost for local dev.
-- [ ] **`deploy-frontend.yml`** — GitHub Action: build Vite → deploy `dist/` to GitHub Pages on push to main.
-- [ ] **`deploy-backend.yml`** — GitHub Action: build Docker image → push to `ghcr.io` → trigger Render deploy hook.
-- [ ] **Supabase** — Create free project, store `DATABASE_URL` as GitHub Secret `SUPABASE_DATABASE_URL`.
-- [ ] **Render** — Deploy backend from `ghcr.io` image. Set env vars via Render dashboard.
-- [ ] **Extend `ci.yml`** — Add `npm run build` step to catch frontend breakage on every push.
+### Phase 2 — Deploy It (Free) (Completed)
+- [x] **LLM Provider Toggle** — `LLM_PROVIDER=groq|ollama` env var in `llm_config.py`. Groq API key stored as GitHub Secret + Render env var. Eliminates 60s/phase Ollama inference time.
+- [x] **`docker-compose.prod.yml`** — Production override: no Ollama service, uses Supabase DATABASE_URL, sets LLM_PROVIDER=groq.
+- [x] **`.env.example`** — Document all required env vars: `GROQ_API_KEY`, `DATABASE_URL`, `LLM_PROVIDER`, `ALLOWED_ORIGINS`.
+- [x] **Dynamic CORS** — `main.py` reads `ALLOWED_ORIGINS` from env; defaults to localhost for local dev.
+- [x] **`deploy-frontend.yml`** — GitHub Action: build Vite → deploy `dist/` to GitHub Pages on push to main.
+- [x] **`deploy-backend.yml`** — GitHub Action: build Docker image → push to `ghcr.io` → trigger Render deploy hook.
+- [x] **Supabase** — Create free project, store `DATABASE_URL` as GitHub Secret `SUPABASE_DATABASE_URL`.
+- [x] **Render** — Deploy backend from `ghcr.io` image. Set env vars via Render dashboard.
+- [x] **Extend `ci.yml`** — Add `npm run build` step to catch frontend breakage on every push.
 
 ### Phase 3 — Future
 - [ ] Sample size calculator widget
@@ -98,16 +98,14 @@ adaptive-trial-simulator/
 - Recharts — flexible, React-native chart library; works well with dynamic arm keys.
 - Thompson Sampling weights — exponential weight proxy worked as initial placeholder; will be replaced with real Beta posterior sampling.
 - pytest split into fast/slow — CI runs only fast suite (<4s, 24 tests); `@pytest.mark.slow` guards MCMC tests from pipeline.
+
 - `vite.config.js` already has `base: '/adaptive-trail-simulator/'` for correct GitHub Pages routing.
 - Deployment stack chosen entirely on free-tier availability: Render (backend), GitHub Pages (frontend), Supabase (DB), Groq (LLM).
 - No AWS, Azure, or GCP — cost and complexity are unnecessary for this project scope.
 
 ## Current known issues
-- Simulation wall-clock time is slow (~1-2 min) on local Ollama CPU inference per phase. Fix: LLM_PROVIDER=groq toggle (Phase 2).
-- `tools.py` has hardcoded `true_effects = {"Control": 0.0, "Arm_A": 0.1, "Arm_B": 1.2}` — dynamic arm names from the form will break this. Must be fixed in Phase 1.
-- DB is write-only — no read endpoints exist yet. History tab depends on this.
-- Stopping logic caps at 3 phases unconditionally. Must be replaced with real configurable rules.
-- CORS allows only `localhost:5173` — must be env-configurable before Render deployment.
+- The model `llama3-8b-8192` is decommissioned by Groq. Must be updated to `llama-3.1-8b-instant` or similar in `llm_config.py`.
+- DB connection requires Supabase "Session pooler" on port 6543 because Render blocks IPv6 on port 5432.
 
 ## How to run locally
 ```bash
