@@ -14,10 +14,10 @@ scipy = "^1.14.0"
 pydantic = "^2.5.3"
 langgraph = "*"
 langchain-ollama = "*"
-langchain-groq = "*"
 sqlalchemy = "^2.0.25"
 psycopg2-binary = "^2.9.9"
 numpyro = "^0.20.1"
+langchain-openai = "^1.1.12"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.2"

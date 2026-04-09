@@ -2,15 +2,19 @@ import os
 
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama").lower()
 
-if LLM_PROVIDER == "groq":
-    from langchain_groq import ChatGroq
+if LLM_PROVIDER == "nvidia":
+    from langchain_openai import ChatOpenAI
 
-    local_llm = ChatGroq(
-        model="llama3-8b-8192",
-        temperature=0.1,
-        api_key=os.getenv("GROQ_API_KEY"),
+    local_llm = ChatOpenAI(
+        model="google/gemma-4-31b-it",
+        temperature=1.00,
+        top_p=0.95,
+        max_tokens=16384,
+        api_key=os.getenv("NVIDIA_API_KEY", "placeholder"),
+        base_url="https://integrate.api.nvidia.com/v1",
+        model_kwargs={"extra_body": {"chat_template_kwargs": {"enable_thinking": True}}},
     )
-    print("[LLM] Using Groq API (llama3-8b-8192)")
+    print("[LLM] Using NVIDIA API (google/gemma-4-31b-it)")
 
 else:
     from langchain_ollama import ChatOllama

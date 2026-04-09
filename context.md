@@ -7,19 +7,19 @@ A web application for LLM-guided clinical trial simulation. Users configure mult
 - Language: Python 3.11 (Backend), JavaScript/JSX (Frontend)
 - Framework: FastAPI (Backend), React + Vite (Frontend)
 - Database: PostgreSQL (local via Docker; production via Supabase free tier)
-- LLM/Agents: LangGraph, LangChain — supports Ollama (local) and Groq API (cloud) via `LLM_PROVIDER` env toggle
+- LLM/Agents: LangGraph, LangChain — supports Ollama (local) and NVIDIA API (cloud) via `LLM_PROVIDER` env toggle
 - Bayesian Statistics: NumPyro + JAX (NUTS/MCMC sampler — Bayesian Estimation Superseding the T-test)
 - Styling: Tailwind CSS
 - Data Visualization: Recharts
 - Containerization: Docker & Docker Compose (local), `docker-compose.prod.yml` (production override)
 - Testing: pytest (unit + agent mock tests)
 - CI/CD: GitHub Actions (CI tests + frontend deploy to GitHub Pages + backend image push to ghcr.io)
-- Deployment (free): GitHub Pages (frontend), Render.com (backend), Supabase (database), Groq (LLM)
+- Deployment (free): GitHub Pages (frontend), Render.com (backend), Supabase (database), NVIDIA (LLM)
 
 ## Folder structure
 ```
 adaptive-trial-simulator/
-├── .env.example                 # Documents required env vars (GROQ_API_KEY, DATABASE_URL, etc.)
+├── .env.example                 # Documents required env vars (NVIDIA_API_KEY, DATABASE_URL, etc.)
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml               # Runs pytest + frontend build on every push
@@ -27,13 +27,13 @@ adaptive-trial-simulator/
 │       └── deploy-backend.yml   # Builds Docker image, pushes to ghcr.io, triggers Render deploy
 ├── backend/                     # Python backend using FastAPI and LangGraph
 │   ├── app/
-│   │   ├── agent/               # LangGraph graph, schemas, tools, LLM config (Ollama/Groq toggle)
+│   │   ├── agent/               # LangGraph graph, schemas, tools, LLM config (Ollama/NVIDIA toggle)
 │   │   ├── api/                 # FastAPI route endpoints (simulate + history)
 │   │   ├── core/                # SQLAlchemy database config and ORM models
 │   │   └── engine/              # Trial simulation engine (cohorts.py, stats.py)
 │   ├── tests/                   # pytest suite (test_engine, test_agent, test_stats)
 │   ├── Dockerfile               # Docker setup for backend
-│   └── pyproject.toml           # Poetry dependencies (numpyro, langgraph, langchain-groq, pytest)
+│   └── pyproject.toml           # Poetry dependencies (numpyro, langgraph, langchain-openai, pytest)
 ├── frontend/                    # React + Vite frontend
 │   ├── src/
 │   │   ├── components/
@@ -44,7 +44,7 @@ adaptive-trial-simulator/
 │   ├── vite.config.js           # Vite config with GitHub Pages base path
 │   └── package.json             # Node dependencies
 ├── docker-compose.yml           # Local dev: db + backend + frontend + ollama
-├── docker-compose.prod.yml      # Production override: no ollama, uses Supabase + Groq
+├── docker-compose.prod.yml      # Production override: no ollama, uses Supabase + NVIDIA
 └── context.md                   # This file
 ```
 
@@ -74,9 +74,9 @@ adaptive-trial-simulator/
 - [x] **CSV Export** — "Download CSV" button after simulation: exports phase-by-phase arm stats.
 
 ### Phase 2 — Deploy It (Free) (Completed)
-- [x] **LLM Provider Toggle** — `LLM_PROVIDER=groq|ollama` env var in `llm_config.py`. Groq API key stored as GitHub Secret + Render env var. Eliminates 60s/phase Ollama inference time.
-- [x] **`docker-compose.prod.yml`** — Production override: no Ollama service, uses Supabase DATABASE_URL, sets LLM_PROVIDER=groq.
-- [x] **`.env.example`** — Document all required env vars: `GROQ_API_KEY`, `DATABASE_URL`, `LLM_PROVIDER`, `ALLOWED_ORIGINS`.
+- [x] **LLM Provider Toggle** — `LLM_PROVIDER=nvidia|ollama` env var in `llm_config.py`. NVIDIA API key must be stored as a **GitHub Action Secret** named `NVIDIA_API_KEY` (Repository Settings > Secrets and variables > Actions > New repository secret) and also set as an environment variable in Render. Eliminates 60s/phase Ollama inference time.
+- [x] **`docker-compose.prod.yml`** — Production override: no Ollama service, uses Supabase DATABASE_URL, sets LLM_PROVIDER=nvidia.
+- [x] **`.env.example`** — Document all required env vars: `NVIDIA_API_KEY`, `DATABASE_URL`, `LLM_PROVIDER`, `ALLOWED_ORIGINS`.
 - [x] **Dynamic CORS** — `main.py` reads `ALLOWED_ORIGINS` from env; defaults to localhost for local dev.
 - [x] **`deploy-frontend.yml`** — GitHub Action: build Vite → deploy `dist/` to GitHub Pages on push to main.
 - [x] **`deploy-backend.yml`** — GitHub Action: build Docker image → push to `ghcr.io` → trigger Render deploy hook.
@@ -100,11 +100,11 @@ adaptive-trial-simulator/
 - pytest split into fast/slow — CI runs only fast suite (<4s, 24 tests); `@pytest.mark.slow` guards MCMC tests from pipeline.
 
 - `vite.config.js` already has `base: '/adaptive-trail-simulator/'` for correct GitHub Pages routing.
-- Deployment stack chosen entirely on free-tier availability: Render (backend), GitHub Pages (frontend), Supabase (DB), Groq (LLM).
+- Deployment stack chosen entirely on free-tier availability: Render (backend), GitHub Pages (frontend), Supabase (DB), NVIDIA (LLM).
 - No AWS, Azure, or GCP — cost and complexity are unnecessary for this project scope.
 
 ## Current known issues
-- The model `llama3-8b-8192` is decommissioned by Groq. Must be updated to `llama-3.1-8b-instant` or similar in `llm_config.py`.
+- Update model versions as needed in `llm_config.py` for NVIDIA integration.
 - DB connection requires Supabase "Session pooler" on port 6543 because Render blocks IPv6 on port 5432.
 
 ## How to run locally
@@ -126,8 +126,8 @@ poetry run pytest -v                    # Full suite including Bayesian MCMC tes
 | Variable | Where Used | Example |
 |---|---|---|
 | `DATABASE_URL` | Backend | `postgresql://admin:pass@db:5432/clinical_trials` |
-| `LLM_PROVIDER` | Backend | `ollama` or `groq` |
-| `GROQ_API_KEY` | Backend (Groq mode) | `gsk_...` |
+| `LLM_PROVIDER` | Backend | `ollama` or `nvidia` |
+| `NVIDIA_API_KEY` | Backend (NVIDIA mode) | `nvapi-...` |
 | `OLLAMA_BASE_URL` | Backend (Ollama mode) | `http://ollama:11434` |
 | `ALLOWED_ORIGINS` | Backend | `https://user.github.io,http://localhost:5173` |
 | `VITE_API_URL` | Frontend build | `https://your-app.onrender.com` |
