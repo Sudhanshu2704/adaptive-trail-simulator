@@ -89,6 +89,7 @@ adaptive-trial-simulator/
 - [ ] PDF report export (WeasyPrint / ReportLab)
 - [ ] Multi-user trial profiles (Supabase Auth)
 - [ ] Published arm comparison across historical trials
+- [ ] Frontend styling and finalization still needs to be done
 
 ## Key decisions made
 - PostgreSQL over SQLite — more robust, needed for multi-run history queries.

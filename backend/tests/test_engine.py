@@ -72,8 +72,8 @@ class TestRunInterimPhase:
         allocations  = {"Control": 30, "Arm_B": 80}
         true_effects = {"Control": 0.0, "Arm_B": 1.2}
         result = engine.run_interim_phase(allocations, true_effects)
-        assert len(result["Control"]) == 30
-        assert len(result["Arm_B"]) == 80
+        assert len(result["Control"]["data"]) == 30
+        assert len(result["Arm_B"]["data"]) == 80
 
     def test_higher_effect_arm_has_higher_mean(self):
         """Arm_B (effect=1.2) should have a noticeably higher mean than Control (effect=0)."""
@@ -81,7 +81,7 @@ class TestRunInterimPhase:
         allocations  = {"Control": 1000, "Arm_B": 1000}
         true_effects = {"Control": 0.0, "Arm_B": 1.2}
         result = engine.run_interim_phase(allocations, true_effects)
-        assert np.mean(result["Arm_B"]) > np.mean(result["Control"])
+        assert np.mean(result["Arm_B"]["data"]) > np.mean(result["Control"]["data"])
 
     def test_missing_arm_in_effects_is_safely_skipped(self):
         """If an arm exists in effects but not allocations, it should be silently skipped."""
